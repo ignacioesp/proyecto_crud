@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Eliminar producto</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex items-center justify-center">
+
+    <div class="bg-white max-w-md w-full mx-6 p-8 rounded-2xl shadow-lg">
+
+        <!-- ICONO -->
+
+        <div class="flex justify-center mb-6">
+
+            <div class="w-16 h-16 bg-red-100 rounded-full
+                        flex items-center justify-center">
+
+                <span class="text-3xl">
+                    ⚠️
+                </span>
+
+            </div>
+
+        </div>
+
+
+        <!-- TITULO -->
+
+        <h1 class="text-2xl font-bold text-gray-800 text-center mb-3">
+            Eliminar producto
+        </h1>
+
+
+        <p class="text-gray-600 text-center mb-6">
+
+            ¿Estás seguro de que deseas eliminar el producto?
+
+        </p>
+
+
+        <!-- PRODUCTO -->
+
+        <div class="bg-gray-100 rounded-lg p-4 mb-6">
+
+            <p class="font-semibold text-gray-800 text-center">
+                {{ object.nombre }}
+            </p>
+
+            <p class="text-gray-500 text-sm text-center mt-1">
+                ${{ object.precio }}
+            </p>
+
+        </div>
+
+
+        <!-- FORMULARIO -->
+
+        <form method="post">
+
+            {% csrf_token %}
+
+            <div class="flex gap-3">
+
+                <a
+                    href="{% url 'producto_list' %}"
+                    class="flex-1 text-center
+                           bg-gray-200 hover:bg-gray-300
+                           text-gray-800 font-semibold
+                           py-3 rounded-lg transition"
+                >
+                    Cancelar
+                </a>
+
+                <button
+                    type="submit"
+                    class="flex-1 bg-red-600 hover:bg-red-700
+                           text-white font-semibold
+                           py-3 rounded-lg transition"
+                >
+                    Eliminar
+                </button>
+
+            </div>
+
+        </form>
+
+    </div>
+
+</body>
+</html>
