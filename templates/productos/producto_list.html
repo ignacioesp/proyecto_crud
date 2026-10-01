@@ -96,6 +96,10 @@
                                 Precio
                             </th>
 
+                            <th class="px-6 py-4 text-left">
+                                Stock
+                            </th>
+
                             <th class="px-6 py-4 text-center">
                                 Acciones
                             </th>
@@ -105,7 +109,7 @@
 
                     <tbody class="divide-y divide-gray-200">
 
-                        {% for producto in object_list %}
+                        {% for producto in productos %}
 
                         <tr class="hover:bg-gray-50">
 
@@ -119,6 +123,10 @@
 
                             <td class="px-6 py-4 text-gray-800 font-semibold">
                                 ${{ producto.precio }}
+                            </td>
+
+                            <td class="px-6 py-4 text-gray-600">
+                                {{ producto.stock }}
                             </td>
 
                             <td class="px-6 py-4">
@@ -154,7 +162,7 @@
                         <tr>
 
                             <td
-                                colspan="4"
+                                colspan="5"
                                 class="px-6 py-10 text-center text-gray-500"
                             >
                                 No existen productos registrados.
