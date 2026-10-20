@@ -93,6 +93,10 @@
                             </th>
 
                             <th class="px-6 py-4 text-left">
+                                Skills
+                            </th>
+
+                            <th class="px-6 py-4 text-left">
                                 Precio
                             </th>
 
@@ -121,6 +125,16 @@
                                 {{ producto.descripcion }}
                             </td>
 
+                            <td class="px-6 py-4 text-gray-600">
+                                {% for skill in producto.skills.all %}
+                                    <span class="inline-block bg-blue-100 text-blue-800 text-xs font-semibold px-2 py-1 rounded-full mr-1 mb-1">
+                                        {{ skill.nombre }}
+                                    </span>
+                                {% empty %}
+                                    <span class="text-gray-400">Sin skills</span>
+                                {% endfor %}
+                            </td>
+
                             <td class="px-6 py-4 text-gray-800 font-semibold">
                                 ${{ producto.precio }}
                             </td>
@@ -132,6 +146,15 @@
                             <td class="px-6 py-4">
 
                                 <div class="flex justify-center gap-2">
+
+                                    <a
+                                        href="{% url 'producto_detail' producto.pk %}"
+                                        class="bg-blue-600 hover:bg-blue-700
+                                               text-white px-4 py-2 rounded-lg
+                                               text-sm font-medium"
+                                    >
+                                        Ver
+                                    </a>
 
                                     <a
                                         href="{% url 'producto_update' producto.pk %}"
@@ -162,7 +185,7 @@
                         <tr>
 
                             <td
-                                colspan="5"
+                                colspan="6"
                                 class="px-6 py-10 text-center text-gray-500"
                             >
                                 No existen productos registrados.

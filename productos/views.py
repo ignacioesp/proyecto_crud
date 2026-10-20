@@ -3,6 +3,7 @@ from django.urls import reverse_lazy
 from django.views.generic import (
     CreateView,
     DeleteView,
+    DetailView,
     ListView,
     UpdateView,
 )
@@ -16,6 +17,13 @@ class ProductoListView(LoginRequiredMixin, ListView):
     template_name = "productos/producto_list.html"
     context_object_name = "productos"
     ordering = ["nombre"]
+    queryset = Producto.objects.prefetch_related("skills")
+
+
+class ProductoDetailView(LoginRequiredMixin, DetailView):
+    model = Producto
+    template_name = "productos/producto_detail.html"
+    context_object_name = "producto"
 
 
 class ProductoCreateView(LoginRequiredMixin, CreateView):

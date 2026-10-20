@@ -22,6 +22,15 @@ class ProductoCrudTests(TestCase):
         resp = self.client.get(reverse("producto_list"))
         self.assertContains(resp, "Teclado")
 
+    def test_ver_detalle_producto(self):
+        self.client.force_login(self.user)
+        resp = self.client.get(
+            reverse("producto_detail", args=[self.producto.pk])
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertContains(resp, "Teclado")
+        self.assertContains(resp, "Mecánico")
+
     def test_crear(self):
         self.client.force_login(self.user)
         resp = self.client.post(

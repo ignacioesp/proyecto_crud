@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ producto.nombre }} | Detalle del producto</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-gray-100 min-h-screen">
+    <nav class="bg-gray-900 text-white">
+        <div class="max-w-5xl mx-auto px-6 py-4">
+            <h1 class="text-xl font-bold">CRUD Django</h1>
+        </div>
+    </nav>
+
+    <main class="max-w-3xl mx-auto px-6 py-10">
+        <section class="bg-white rounded-2xl shadow-lg p-8">
+            <p class="text-sm font-semibold uppercase tracking-wide text-blue-600">
+                Detalle del producto
+            </p>
+            <h2 class="text-3xl font-bold text-gray-800 mt-2 mb-6">
+                {{ producto.nombre }}
+            </h2>
+
+            <dl class="grid gap-5 sm:grid-cols-2">
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-semibold text-gray-500">Descripción</dt>
+                    <dd class="mt-1 text-gray-800 whitespace-pre-line">{{ producto.descripcion }}</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-semibold text-gray-500">Precio</dt>
+                    <dd class="mt-1 text-gray-800">${{ producto.precio }}</dd>
+                </div>
+
+                <div>
+                    <dt class="text-sm font-semibold text-gray-500">Stock</dt>
+                    <dd class="mt-1 text-gray-800">{{ producto.stock }}</dd>
+                </div>
+
+                <div class="sm:col-span-2">
+                    <dt class="text-sm font-semibold text-gray-500">Skills</dt>
+                    <dd class="mt-2">
+                        {% for skill in producto.skills.all %}
+                            <span class="inline-block bg-blue-100 text-blue-800 text-sm font-semibold px-3 py-1 rounded-full mr-2 mb-2">
+                                {{ skill.nombre }}
+                            </span>
+                        {% empty %}
+                            <span class="text-gray-400">Sin skills asignadas</span>
+                        {% endfor %}
+                    </dd>
+                </div>
+            </dl>
+
+            <div class="flex flex-wrap gap-3 mt-8">
+                <a
+                    href="{% url 'producto_update' producto.pk %}"
+                    class="bg-yellow-500 hover:bg-yellow-600 text-white px-5 py-3 rounded-lg font-semibold transition"
+                >
+                    Editar
+                </a>
+                <a
+                    href="{% url 'producto_delete' producto.pk %}"
+                    class="bg-red-600 hover:bg-red-700 text-white px-5 py-3 rounded-lg font-semibold transition"
+                >
+                    Eliminar
+                </a>
+                <a
+                    href="{% url 'producto_list' %}"
+                    class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-5 py-3 rounded-lg font-semibold transition"
+                >
+                    Volver a productos
+                </a>
+            </div>
+        </section>
+    </main>
+</body>
+</html>
