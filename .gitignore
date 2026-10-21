@@ -175,3 +175,5 @@ cython_debug/
 # Proyecto
 staticfiles/
 !.env.example
+
+.scannerwork/
