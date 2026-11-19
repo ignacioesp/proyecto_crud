@@ -177,3 +177,9 @@ staticfiles/
 !.env.example
 
 .scannerwork/
+
+.env.docker
+
+.env.docker
+
+.env.docker

@@ -1,0 +1,17 @@
+services:
+  web:
+    build: .
+    image: crud-django:lab
+    container_name: crud_web
+    ports:
+      - "127.0.0.1:8000:8000"
+    env_file:
+      - .env.docker
+    environment:
+      DB_PATH: /data/db.sqlite3
+    volumes:
+      - crud_data:/data
+    restart: unless-stopped
+
+volumes:
+  crud_data:

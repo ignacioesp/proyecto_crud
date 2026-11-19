@@ -1,0 +1,13 @@
+.git
+.gitignore
+.venv
+venv
+__pycache__
+*.pyc
+.env*
+db.sqlite3
+evidencia
+evidencia_e3
+.scannerwork
+staticfiles
+**/node_modules
