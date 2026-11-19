@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
+from django.test import Client
 
 from .forms import ProductoForm
 from .models import Producto
@@ -10,7 +11,8 @@ class ProductoCrudTests(TestCase):
     def setUp(self):
         self.user = get_user_model().objects.create_user("tester", password="clave-segura-123")
         self.producto = Producto.objects.create(
-            nombre="Teclado", descripcion="Mecánico", precio="29990.00", stock=5
+            nombre="Teclado", descripcion="Mecánico", precio="29990.00", stock=5,
+            propietario=self.user,
         )
 
     def test_requiere_login(self):
@@ -110,3 +112,103 @@ class ProductoVistaValidacionTests(TestCase):
         resp = self.client.post(reverse("producto_create"), {**BASE, "stock": 100001})
         self.assertEqual(resp.status_code, 200)  # vuelve al formulario con errores
         self.assertEqual(Producto.objects.count(), 0)
+
+
+
+class LoginLogoutTests(TestCase):
+    def setUp(self):
+        self.user = get_user_model().objects.create_user("ana", password="clave-segura-123")
+
+    def test_login_valido(self):
+        resp = self.client.post(reverse("login"), {"username": "ana", "password": "clave-segura-123"})
+        self.assertRedirects(resp, reverse("producto_list"))
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_login_invalido(self):
+        resp = self.client.post(reverse("login"), {"username": "ana", "password": "incorrecta"})
+        self.assertEqual(resp.status_code, 200)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_por_get_no_permitido(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.client.get(reverse("logout")).status_code, 405)
+        self.assertIn("_auth_user_id", self.client.session)
+
+    def test_logout_por_post_cierra_sesion(self):
+        self.client.force_login(self.user)
+        resp = self.client.post(reverse("logout"))
+        self.assertEqual(resp.status_code, 302)
+        self.assertNotIn("_auth_user_id", self.client.session)
+
+    def test_logout_sin_csrf_es_rechazado(self):
+        c = Client(enforce_csrf_checks=True)
+        c.force_login(self.user)
+        self.assertEqual(c.post(reverse("logout")).status_code, 403)
+        self.assertIn("_auth_user_id", c.session)
+
+
+class AccesoYPermisosTests(TestCase):
+    def setUp(self):
+        User = get_user_model()
+        self.ana = User.objects.create_user("ana", password="clave-segura-123")
+        self.beto = User.objects.create_user("beto", password="clave-segura-123")
+        self.admin = User.objects.create_user("admin", password="clave-segura-123", is_staff=True)
+        self.p_ana = Producto.objects.create(
+            nombre="Producto de Ana", descripcion="x", precio="1000", stock=1, propietario=self.ana
+        )
+        self.datos = {"nombre": "Nuevo", "descripcion": "x", "precio": "1000", "stock": 1}
+
+    def test_anonimo_no_accede_a_rutas_privadas(self):
+        rutas = [
+            reverse("producto_list"), reverse("producto_create"),
+            reverse("producto_detail", args=[self.p_ana.pk]),
+            reverse("producto_update", args=[self.p_ana.pk]),
+            reverse("producto_delete", args=[self.p_ana.pk]),
+        ]
+        for url in rutas:
+            with self.subTest(url=url):
+                resp = self.client.get(url)
+                self.assertEqual(resp.status_code, 302)
+                self.assertTrue(resp.url.startswith("/login/"))
+
+    def test_anonimo_no_puede_escribir(self):
+        self.client.post(reverse("producto_create"), self.datos)
+        self.client.post(reverse("producto_update", args=[self.p_ana.pk]), {**self.datos, "nombre": "Hackeado"})
+        self.client.post(reverse("producto_delete", args=[self.p_ana.pk]))
+        self.assertEqual(Producto.objects.count(), 1)
+        self.p_ana.refresh_from_db()
+        self.assertEqual(self.p_ana.nombre, "Producto de Ana")
+
+    def test_otro_usuario_no_ve_el_detalle_ajeno(self):
+        self.client.force_login(self.beto)
+        resp = self.client.get(reverse("producto_detail", args=[self.p_ana.pk]))
+        self.assertEqual(resp.status_code, 404)
+
+    def test_la_lista_solo_muestra_los_propios(self):
+        self.client.force_login(self.beto)
+        self.assertNotContains(self.client.get(reverse("producto_list")), "Producto de Ana")
+
+    def test_otro_usuario_no_edita_ni_elimina(self):
+        self.client.force_login(self.beto)
+        r1 = self.client.post(reverse("producto_update", args=[self.p_ana.pk]), {**self.datos, "nombre": "Hackeado"})
+        r2 = self.client.post(reverse("producto_delete", args=[self.p_ana.pk]))
+        self.assertEqual((r1.status_code, r2.status_code), (404, 404))
+        self.p_ana.refresh_from_db()
+        self.assertEqual(self.p_ana.nombre, "Producto de Ana")
+
+    def test_crear_asigna_el_propietario(self):
+        self.client.force_login(self.beto)
+        self.client.post(reverse("producto_create"), self.datos)
+        self.assertEqual(Producto.objects.get(nombre="Nuevo").propietario, self.beto)
+
+    def test_el_dueno_edita_y_elimina_lo_suyo(self):
+        self.client.force_login(self.ana)
+        self.client.post(reverse("producto_update", args=[self.p_ana.pk]), {**self.datos, "nombre": "Editado"})
+        self.p_ana.refresh_from_db()
+        self.assertEqual(self.p_ana.nombre, "Editado")
+        self.client.post(reverse("producto_delete", args=[self.p_ana.pk]))
+        self.assertFalse(Producto.objects.filter(pk=self.p_ana.pk).exists())
+
+    def test_el_personal_ve_todos(self):
+        self.client.force_login(self.admin)
+        self.assertContains(self.client.get(reverse("producto_list")), "Producto de Ana")
